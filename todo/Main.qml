@@ -98,5 +98,43 @@ Item {
         ToastService.showNotice(message + clearedCount + suffix);
       }
     }
+
+    function removeTodo(id: int) {
+      if (pluginApi && id >= 0) {
+        var todos = pluginApi.pluginSettings.todos || [];
+        var indexToRemove = -1;
+
+        for (var i = 0; i < todos.length; i++) {
+          if (todos[i].id === id) {
+            indexToRemove = i;
+            Logger.i("Todo", "Found todo at index: " + i);
+            break;
+          }
+        }
+
+        if (indexToRemove !== -1) {
+          todos.splice(indexToRemove, 1);
+
+          pluginApi.pluginSettings.todos = todos;
+          pluginApi.pluginSettings.count = todos.length;
+
+          // Recalculate completed count after removal
+          var completedCount = 0;
+          for (var j = 0; j < todos.length; j++) {
+            if (todos[j].completed) {
+              completedCount++;
+            }
+          }
+          pluginApi.pluginSettings.completedCount = completedCount;
+          pluginApi.saveSettings();
+          ToastService.showNotice(pluginApi?.tr("main.removed_todo"));
+        } else {
+          Logger.e("Todo", "Todo with ID " + id + " not found");
+          ToastService.showError(pluginApi?.tr("main.todo_not_found") + id + pluginApi?.tr("main.not_found_suffix"));
+        }
+      } else {
+        Logger.e("Todo", "Invalid pluginApi or ID for removeTodo");
+      }
+    }
   }
 }

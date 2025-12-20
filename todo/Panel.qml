@@ -3,27 +3,20 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
+import qs.Services.UI
 
 Item {
   id: root
 
   property var pluginApi: null
-
   readonly property var geometryPlaceholder: panelContainer
-
   property real contentPreferredWidth: 800 * Style.uiScaleRatio
   property real contentPreferredHeight: 600 * Style.uiScaleRatio
-
   readonly property bool allowAttach: true
-
   anchors.fill: parent
-
   property ListModel todosModel: ListModel {}
-
   property ListModel filteredTodosModel: ListModel {}
-
   property bool showCompleted: false
-
   property var rawTodos: []
 
   Binding {
@@ -73,6 +66,9 @@ Item {
     }
   }
 
+  // Watch for changes in the todos array length or showCompleted setting
+  property int previousTodosCount: -1
+
   Timer {
     id: settingsWatcher
     interval: 200
@@ -80,8 +76,12 @@ Item {
     repeat: true
     onTriggered: {
       var newShowCompleted = pluginApi?.pluginSettings?.showCompleted || pluginApi?.manifest?.metadata?.defaultSettings?.showCompleted || false;
-      if (root.showCompleted !== newShowCompleted) {
+      var currentTodos = pluginApi?.pluginSettings?.todos || [];
+      var currentTodosCount = currentTodos.length;
+
+      if (root.showCompleted !== newShowCompleted || root.previousTodosCount !== currentTodosCount) {
         root.showCompleted = newShowCompleted;
+        root.previousTodosCount = currentTodosCount;
         loadTodos();
       }
     }
@@ -248,20 +248,18 @@ Item {
                         implicitWidth: Style.baseWidgetSize * 0.8
                         implicitHeight: Style.baseWidgetSize * 0.8
                         radius: Style.radiusM
-                        opacity: 0.7
+                        opacity: model.completed ? 0.5 : 0.7
 
-                        MouseArea {
-                          anchors.fill: parent
-                          hoverEnabled: true
-
-                          onEntered: {
-                            deleteButton.opacity = 1.0;
+                        states: [
+                          State {
+                            name: "hovered"
+                            when: deleteButton.hovering
+                            PropertyChanges {
+                              target: deleteButton
+                              opacity: 1.0
+                            }
                           }
-
-                          onExited: {
-                            deleteButton.opacity = 0.7;
-                          }
-                        }
+                        ]
 
                         transitions: Transition {
                           PropertyAnimation {
@@ -270,24 +268,50 @@ Item {
                           }
                         }
 
+                        onEntered: {
+                          deleteButton.opacity = 1.0;
+                        }
+
+                        onExited: {
+                          deleteButton.opacity = model.completed ? 0.5 : 0.7;
+                        }
+
                         onClicked: {
-                          var updatedTodos = pluginApi.pluginSettings.todos.filter(function (item) {
-                            return item.id !== model.id;
-                          });
+                          // Directly modify the todos list through pluginApi
+                          if (pluginApi) {
+                            var todos = pluginApi.pluginSettings.todos || [];
+                            var indexToRemove = -1;
 
-                          pluginApi.pluginSettings.todos = updatedTodos;
-                          pluginApi.pluginSettings.count = updatedTodos.length;
-
-                          var completedCount = 0;
-                          for (var i = 0; i < updatedTodos.length; i++) {
-                            if (updatedTodos[i].completed) {
-                              completedCount++;
+                            for (var i = 0; i < todos.length; i++) {
+                              if (todos[i].id === model.id) {
+                                indexToRemove = i;
+                                break;
+                              }
                             }
-                          }
-                          pluginApi.pluginSettings.completedCount = completedCount;
 
-                          pluginApi.saveSettings();
-                          loadTodos();
+                            if (indexToRemove !== -1) {
+                              todos.splice(indexToRemove, 1);
+
+                              pluginApi.pluginSettings.todos = todos;
+                              pluginApi.pluginSettings.count = todos.length;
+
+                              // Recalculate completed count after removal
+                              var completedCount = 0;
+                              for (var j = 0; j < todos.length; j++) {
+                                if (todos[j].completed) {
+                                  completedCount++;
+                                }
+                              }
+                              pluginApi.pluginSettings.completedCount = completedCount;
+
+                              pluginApi.saveSettings();
+                              loadTodos();
+                            } else {
+                              Logger.e("Todo", "Todo with ID " + model.id + " not found for deletion");
+                            }
+                          } else {
+                            Logger.e("Todo", "pluginApi is null, cannot delete todo");
+                          }
                         }
                       }
                     }
@@ -429,7 +453,7 @@ Item {
 
         pluginApi.saveSettings();
 
-        newTodoInput.text = ""; // Clear input
+        newTodoInput.text = "";
         loadTodos(); // Reload todos to update view
       }
     }

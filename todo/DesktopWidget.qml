@@ -9,11 +9,8 @@ DraggableDesktopWidget {
   id: root
 
   property var pluginApi: null
-
   property bool expanded: false
-
   property bool showCompleted: pluginApi?.pluginSettings?.showCompleted || pluginApi?.manifest?.metadata?.defaultSettings?.showCompleted || false
-
   property ListModel filteredTodosModel: ListModel {}
 
   implicitWidth: 300
