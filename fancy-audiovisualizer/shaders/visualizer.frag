@@ -10,7 +10,7 @@ layout(std140, binding = 0) uniform buf {
     float itemWidth;
     float itemHeight;
     vec4 primaryColor;
-    vec4 accentColor;
+    vec4 secondaryColor;
     float sensitivity;
     float rotationSpeed;
     float barWidth;
@@ -80,7 +80,7 @@ vec4 computePolarWave(vec2 uv, float iTime, float bass, float mid, float highMid
             float ripple = sin(d * 25.0 + wave * 15.0 - iTime * 2.0);
             if (ripple > 0.7) {
                 float intensity = clamp(mid * 0.6, 0.0, 0.4);
-                vec4 waveColor = ubuf.accentColor * intensity * ubuf.ringOpacity;
+                vec4 waveColor = ubuf.secondaryColor * intensity * ubuf.ringOpacity;
                 color = max(color, waveColor);
             }
         }
@@ -92,7 +92,7 @@ vec4 computePolarWave(vec2 uv, float iTime, float bass, float mid, float highMid
             float segmentAngle = theta * 8.0 + highMid * 3.0 + iTime;
             if (mod(segmentAngle, 1.0) < 0.6) {
                 float alpha = clamp(highMid * 2.0, 0.3, 1.0) * ubuf.ringOpacity;
-                vec4 energyColor = mix(ubuf.primaryColor, ubuf.accentColor, 0.5) * alpha;
+                vec4 energyColor = mix(ubuf.primaryColor, ubuf.secondaryColor, 0.5) * alpha;
                 color = max(color, energyColor);
             }
         }
@@ -104,7 +104,7 @@ vec4 computePolarWave(vec2 uv, float iTime, float bass, float mid, float highMid
             float particleSpacing = TWOPI / 16.0;
             if (mod(particleAngle, particleSpacing) < 0.15) {
                 float brightness = 0.5 + clamp(treble * 1.5, 0.0, 0.5);
-                vec4 particleColor = ubuf.accentColor * brightness * ubuf.ringOpacity;
+                vec4 particleColor = ubuf.secondaryColor * brightness * ubuf.ringOpacity;
                 color = max(color, particleColor);
             }
         }
@@ -126,7 +126,7 @@ vec4 computePolarWave(vec2 uv, float iTime, float bass, float mid, float highMid
         float pulse = clamp(bass * 0.08, 0.0, 0.05);
         if (d > accentRad - pulse - 0.008 && d < accentRad + pulse + 0.015) {
             float colorShift = clamp(bass * 0.5, 0.0, 1.0);
-            vec4 ringColor = mix(ubuf.accentColor * 0.7, ubuf.primaryColor, colorShift);
+            vec4 ringColor = mix(ubuf.secondaryColor * 0.7, ubuf.primaryColor, colorShift);
             ringColor.a = ubuf.ringOpacity;
             ringColor.rgb *= 1.0 + bass * 0.3;
             color = max(color, ringColor);
@@ -187,7 +187,7 @@ vec4 computePolarWave(vec2 uv, float iTime, float bass, float mid, float highMid
             float fillFactor = (d - innerRadius) / max(waveRadius - innerRadius, 0.001);
 
             // Gradient from primary at base to accent at edge
-            vec3 fillColor = mix(ubuf.primaryColor.rgb * 0.8, ubuf.accentColor.rgb, fillFactor);
+            vec3 fillColor = mix(ubuf.primaryColor.rgb * 0.8, ubuf.secondaryColor.rgb, fillFactor);
 
             // Boost brightness with bass
             fillColor *= 1.0 + bass * 0.3;
@@ -205,7 +205,7 @@ vec4 computePolarWave(vec2 uv, float iTime, float bass, float mid, float highMid
         float distToEdge = abs(d - waveRadius);
         if (distToEdge < edgeThickness) {
             float edgeFactor = 1.0 - smoothstep(0.0, edgeThickness, distToEdge);
-            vec3 edgeColor = ubuf.accentColor.rgb * (1.2 + smoothedAudio * 0.5);
+            vec3 edgeColor = ubuf.secondaryColor.rgb * (1.2 + smoothedAudio * 0.5);
 
             // Add highlight at peaks
             if (smoothedAudio > 0.5) {
@@ -242,7 +242,7 @@ vec4 computeVisualization(vec2 uv, float iTime, float bass, float mid, float hig
             float ripple = sin(d * 25.0 + wave * 15.0 - iTime * 2.0);
             if (ripple > 0.7) {
                 float intensity = clamp(mid * 0.6, 0.0, 0.4);
-                vec4 waveColor = ubuf.accentColor * intensity * ubuf.ringOpacity;
+                vec4 waveColor = ubuf.secondaryColor * intensity * ubuf.ringOpacity;
                 color = max(color, waveColor);
             }
         }
@@ -254,7 +254,7 @@ vec4 computeVisualization(vec2 uv, float iTime, float bass, float mid, float hig
             float segmentAngle = theta * 8.0 + highMid * 3.0 + iTime;
             if (mod(segmentAngle, 1.0) < 0.6) {
                 float alpha = clamp(highMid * 2.0, 0.3, 1.0) * ubuf.ringOpacity;
-                vec4 energyColor = mix(ubuf.primaryColor, ubuf.accentColor, 0.5) * alpha;
+                vec4 energyColor = mix(ubuf.primaryColor, ubuf.secondaryColor, 0.5) * alpha;
                 color = max(color, energyColor);
             }
         }
@@ -266,7 +266,7 @@ vec4 computeVisualization(vec2 uv, float iTime, float bass, float mid, float hig
             float particleSpacing = TWOPI / 16.0;
             if (mod(particleAngle, particleSpacing) < 0.15) {
                 float brightness = 0.5 + clamp(treble * 1.5, 0.0, 0.5);
-                vec4 particleColor = ubuf.accentColor * brightness * ubuf.ringOpacity;
+                vec4 particleColor = ubuf.secondaryColor * brightness * ubuf.ringOpacity;
                 color = max(color, particleColor);
             }
         }
@@ -288,7 +288,7 @@ vec4 computeVisualization(vec2 uv, float iTime, float bass, float mid, float hig
         float pulse = clamp(bass * 0.08, 0.0, 0.05);
         if (d > accentRad - pulse - 0.008 && d < accentRad + pulse + 0.015) {
             float colorShift = clamp(bass * 0.5, 0.0, 1.0);
-            vec4 ringColor = mix(ubuf.accentColor * 0.7, ubuf.primaryColor, colorShift);
+            vec4 ringColor = mix(ubuf.secondaryColor * 0.7, ubuf.primaryColor, colorShift);
             ringColor.a = ubuf.ringOpacity;
             ringColor.rgb *= 1.0 + bass * 0.3;
             color = max(color, ringColor);
@@ -334,7 +334,7 @@ vec4 computeVisualization(vec2 uv, float iTime, float bass, float mid, float hig
 
                 vec3 bottomColor = ubuf.primaryColor.rgb * 0.6;
                 vec3 middleColor = ubuf.primaryColor.rgb;
-                vec3 topColor = ubuf.accentColor.rgb;
+                vec3 topColor = ubuf.secondaryColor.rgb;
 
                 vec3 barColor;
                 if (heightFactor < 0.5) {
@@ -424,7 +424,7 @@ void main() {
             float accentRad = innerRadius * 0.92;
             float accentDist = abs(d - accentRad);
             float accentGlow = exp(-accentDist * 10.0 / ubuf.bloomIntensity) * (0.7 + bass * 0.3);
-            glowColor += mix(ubuf.accentColor.rgb, ubuf.primaryColor.rgb, 0.5) * accentGlow;
+            glowColor += mix(ubuf.secondaryColor.rgb, ubuf.primaryColor.rgb, 0.5) * accentGlow;
             glowAmount = max(glowAmount, accentGlow);
         }
 
@@ -466,7 +466,7 @@ void main() {
                 float distToWave = abs(d - waveRadius);
                 float waveGlow = exp(-distToWave * 8.0 / ubuf.bloomIntensity) * smoothedAudio * 2.5;
 
-                vec3 waveGlowColor = mix(ubuf.primaryColor.rgb, ubuf.accentColor.rgb, smoothedAudio);
+                vec3 waveGlowColor = mix(ubuf.primaryColor.rgb, ubuf.secondaryColor.rgb, smoothedAudio);
                 glowColor += waveGlowColor * waveGlow;
                 glowAmount = max(glowAmount, waveGlow);
             }
@@ -491,7 +491,7 @@ void main() {
                 float barGlow = exp(-totalDist * 15.0 / ubuf.bloomIntensity) * v * 2.0;
 
                 float heightFactor = clamp((d - innerRadius) / max(barEnd - innerRadius, 0.001), 0.0, 1.0);
-                vec3 barGlowColor = mix(ubuf.primaryColor.rgb, ubuf.accentColor.rgb, heightFactor);
+                vec3 barGlowColor = mix(ubuf.primaryColor.rgb, ubuf.secondaryColor.rgb, heightFactor);
 
                 glowColor += barGlowColor * barGlow;
                 glowAmount = max(glowAmount, barGlow);

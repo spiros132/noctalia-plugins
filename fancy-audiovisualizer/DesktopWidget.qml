@@ -26,6 +26,10 @@ DraggableDesktopWidget {
   readonly property int visualizationMode: pluginApi?.pluginSettings?.visualizationMode ?? pluginApi?.manifest?.metadata?.defaultSettings?.visualizationMode ?? 3
   readonly property real waveThickness: pluginApi?.pluginSettings?.waveThickness ?? pluginApi?.manifest?.metadata?.defaultSettings?.waveThickness ?? 1.0
   readonly property real innerDiameter: pluginApi?.pluginSettings?.innerDiameter ?? pluginApi?.manifest?.metadata?.defaultSettings?.innerDiameter ?? 0.7
+  readonly property bool fadeWhenIdle: pluginApi?.pluginSettings?.fadeWhenIdle ?? false
+  readonly property bool useCustomColors: pluginApi?.pluginSettings?.useCustomColors ?? false
+  readonly property color customPrimaryColor: pluginApi?.pluginSettings?.customPrimaryColor ?? "#6750A4"
+  readonly property color customSecondaryColor: pluginApi?.pluginSettings?.customSecondaryColor ?? "#625B71"
 
   // Animation time for shader (0 to 3600, 1 hour cycle)
   property real shaderTime: 0
@@ -101,7 +105,7 @@ DraggableDesktopWidget {
     id: visualizer
     anchors.fill: parent
     visible: pluginApi !== null
-    opacity: CavaService.isIdle ? 0 : 1
+    opacity: (root.fadeWhenIdle && CavaService.isIdle) ? 0 : 1
 
     Behavior on opacity {
       NumberAnimation { duration: 500; easing.type: Easing.InOutQuad }
@@ -114,8 +118,8 @@ DraggableDesktopWidget {
     property real time: root.shaderTime
     property real itemWidth: visualizer.width
     property real itemHeight: visualizer.height
-    property color primaryColor: Color.mPrimary
-    property color accentColor: Color.mSecondary
+    property color primaryColor: root.useCustomColors ? root.customPrimaryColor : Color.mPrimary
+    property color secondaryColor: root.useCustomColors ? root.customSecondaryColor : Color.mSecondary
     property real sensitivity: root.sensitivity
     property real rotationSpeed: root.rotationSpeed
     property real barWidth: root.barWidth
