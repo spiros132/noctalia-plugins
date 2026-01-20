@@ -54,8 +54,11 @@
       "description": "DNS Manager",
       "minNoctaliaVersion": "4.0.0",
       "license": "MIT",
-      "tags": [],
-      "lastUpdated": "2026-01-17T06:07:06+05:30"
+      "tags": [
+        "Bar",
+        "Network"
+      ],
+      "lastUpdated": "2026-01-20T18:56:53+01:00"
     },
     {
       "id": "fancy-audiovisualizer",
