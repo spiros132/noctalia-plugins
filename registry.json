@@ -332,7 +332,7 @@
     {
       "id": "rss-feed",
       "name": "RSS Feed Reader",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "official": false,
       "author": "Lokize",
       "description": "Monitor and read RSS/Atom feeds directly from your desktop",
@@ -340,7 +340,7 @@
       "minNoctaliaVersion": "3.6.0",
       "license": "MIT",
       "tags": [],
-      "lastUpdated": "2026-01-25T13:40:26-05:00"
+      "lastUpdated": "2026-01-26T11:45:05-03:00"
     },
     {
       "id": "screen-recorder",
