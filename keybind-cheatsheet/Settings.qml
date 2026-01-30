@@ -42,27 +42,7 @@ Item {
   }
 
   Component.onDestruction: {
-    // Stop timers and processes to prevent firing after destruction
     resizeTimer.stop();
-    if (settingsRefreshProcess.running) {
-      settingsRefreshProcess.running = false;
-    }
-  }
-
-  // Helper to get config name for IPC
-  function getConfigName() {
-    var qsConfig = Quickshell.env("QS_CONFIG_NAME");
-    if (qsConfig && qsConfig.length > 0) {
-      return qsConfig;
-    }
-    return "noctalia-shell";
-  }
-
-  // Process to call IPC refresh command
-  Process {
-    id: settingsRefreshProcess
-    command: ["qs", "-c", rootItem.getConfigName(), "ipc", "call", "plugin:keybind-cheatsheet", "refresh"]
-    running: false
   }
 
   ColumnLayout {
